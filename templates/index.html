@@ -8,8 +8,34 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   </head>
   <body>
-    <h1>Rambutan</h1>
-    <p>The current time is: <strong>{{ current_time }}</strong></p>
+    <div class="container">
+      <h1>Rambutan</h1>
+    </div>
+    <div class="gallery container">
+      <div class="col gy-3">
+        {% for photo in photo_links %}
+          <div class="photo row gy-1">
+            <div class="row">
+              <div class="col">
+                <img class="img-fluid rounded" src="{{ photo['raw_link'] }}">
+              </div>
+            </div>
+            <div class="col-3">
+              <a href="{{ photo['gallery_link'] }}">Gallery Link</a>
+            </div>
+            <div class="col">
+              <ul>
+                <li><strong>Album:</strong> <a href="{{ photo['album_link'] }}">{{ photo['album_title'] }}</a></li>
+                <li><strong>Location: </strong>{{ photo['address'] }} </li>
+                <li><strong>Camera: </strong>{{ photo['camera_body'] }} </li>
+                <li><strong>Lens: </strong>{{ photo['lens'] }} </li>
+                <li><strong>Settings: </strong>{{ photo['focal_length'] }}, {{ photo['aperture'] }}, {{ photo['shutter_speed'] }} </li>
+              </ul>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
   </body>
 </html>

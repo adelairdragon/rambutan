@@ -1,0 +1,7 @@
+[lychee]
+base_url = "https://photos.adelair.cool"
+
+
+[db]
+type = "sqlite"
+uri = "adelair.db"
