@@ -7,6 +7,6 @@ base_url = "https://photos.adelair.cool"
 # 
 [db]
 type = "sqlite" # Database types supported: 'sqlite', 'mysql', 'postgresql'
-host = "adelair.db" # for sqlite this is a path on a local system, for other databases this is a hostname
+host = "adelair_example.db" # for sqlite this is a path on a local system, for other databases this is a hostname
 # user = 
 # password = 
