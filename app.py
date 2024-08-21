@@ -4,8 +4,8 @@ import random
 
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import inspect
 from sqlalchemy.orm import DeclarativeBase
+import sqlalchemy
 
 class Base(DeclarativeBase):
   pass
@@ -17,22 +17,40 @@ app = Flask(__name__)
 with open("config.toml", "rb") as f:
     config = tomllib.load(f)
 
-print("Config:", config)
+# print("Config:", config)
+
+server_name = config.get('rambutan', {}).get('title')
+
+if server_name is None:
+    server_name = "Rambutan Example Deployment"
 
 # Configure the SQLAlchemy connection string based on the DB_TYPE environment variable
-db_type = config['db'].get('type', 'sqlite')  # Default to MySQL if not set
+db_type = config['db'].get('type', 'sqlite')  # Default to SQLite if not set
 
 if db_type == 'mysql':
-    app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+mysqlconnector://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
+    drivername = 'mysql+mysqlconnector'
 elif db_type == 'postgresql':
-    app.config['SQLALCHEMY_DATABASEURI'] = f"postgresql+psycopg2://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
+    drivername = 'postgresql+psycopg2'
 elif db_type == 'sqlite':
-    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{config['db']['uri']}"
+    drivername = 'sqlite'
 else:
     raise ValueError("Unsupported DB_TYPE. Choose from 'mysql', 'postgresql', or 'sqlite'.")
 
+if db_type == "sqlite":
+    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{config['db']['host']}"
+else:
+    url_object = sqlalchemy.URL.create(
+        drivername,
+        username = config['db']['user'],
+        password = config['db']['password'],
+        host =     config['db']['host'],
+        port =     config['db']['port'],
+        database = config['db']['database']
+    )
+    app.config['SQLALCHEMY_DATABASE_URI'] = url_object
+
 # app.config['SQLALCHEMY_ECHO'] = True
-print("DB URI:", app.config['SQLALCHEMY_DATABASE_URI'])
+# print("DB URI:", app.config['SQLALCHEMY_DATABASE_URI'])
 
 lychee_base_url = config['lychee']['base_url']
 
@@ -41,8 +59,8 @@ db.init_app(app)
 
 with app.app_context():
     db.reflect()
-    inspection = inspect(db.engine)
-    print("Tables:", inspection.get_table_names())
+    # inspection = sqlalchemy.inspect(db.engine)
+    # print("Tables:", inspection.get_table_names())
 
 
 # Photo Model
@@ -83,7 +101,7 @@ def index():
                               "shutter_speed": photo.shutter,
                               "focal_length": photo.focal})
     
-    return render_template('index.html', current_time=datetime.now().strftime("%A, %d. %B %Y %I:%M%p"), photo_links=random_photos)
+    return render_template('index.html', current_time=datetime.now().strftime("%A, %d. %B %Y %I:%M%p"), photo_links=random_photos, server_name=server_name)
 
 if __name__ == '__main__':
     app.run(debug=True)

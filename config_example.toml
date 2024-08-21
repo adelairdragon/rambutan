@@ -1,0 +1,12 @@
+[rambutan]
+title = "Rambutan Example Deployment"
+
+[lychee]
+base_url = "https://photos.adelair.cool"
+
+# 
+[db]
+type = "sqlite" # Database types supported: 'sqlite', 'mysql', 'postgresql'
+host = "adelair.db" # for sqlite this is a path on a local system, for other databases this is a hostname
+# user = 
+# password = 
