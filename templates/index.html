@@ -11,6 +11,18 @@
     <div class="container">
       <h1>{{ server_name }}</h1>
     </div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="container mt-3">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
     <div class="gallery container">
       <div class="col gy-3 m-3">
         {% for photo in photo_links %}
@@ -25,6 +37,7 @@
             </div>
             <div class="col">
               <ul>
+                <li><strong>Title: </strong>{{ photo['title'] }} </li>
                 <li><strong>Album:</strong> <a href="{{ photo['album_link'] }}">{{ photo['album_title'] }}</a></li>
                 <li><strong>Location: </strong>{{ photo['address'] }} </li>
                 <li><strong>Camera: </strong>{{ photo['camera_body'] }} </li>

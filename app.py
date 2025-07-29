@@ -1,8 +1,9 @@
 from datetime import datetime
 import tomllib
 import random
+import secrets
 
-from flask import Flask, render_template
+from flask import Flask, render_template, flash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 import sqlalchemy
@@ -13,6 +14,7 @@ class Base(DeclarativeBase):
 db = SQLAlchemy(model_class=Base)
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = secrets.token_urlsafe(16) # When this gets used for anything besides flashing messages, change to be persistent
 
 with open("config.toml", "rb") as f:
     config = tomllib.load(f)
@@ -80,19 +82,38 @@ def index():
     random_photo_results = random.choices(starred_photos, k=3)
     random_photos = []
     for photo in random_photo_results:
-        photo_gallery_link = f'{lychee_base_url}/gallery/{photo.album_id}/{photo.id}'
-        album_link = f'{lychee_base_url}/gallery/{photo.album_id}'
+        photo_id = photo.id
+        photo_title = photo.title
+        if 'album_id' in Photos.__table__.columns:
+            album_id = photo.album_id
+        elif 'old_album_id' in Photos.__table__.columns: # TODO: Join properly with photos_albums table for post 6.6.6 Lychee instances
+            album_id = photo.old_album_id
+        else:
+            album_id = "starred"
+            flash(f"""
+                Could not find album ID. Using "starred" as a backup. This will be janky.
+                  Please update or alert devs about this issue.
+                  (For photo "{photo.title}")
+            """, "warning")
+        photo_gallery_link = f'{lychee_base_url}/gallery/{album_id}/{photo_id}'
+        album_link = f'{lychee_base_url}/gallery/{album_id}'
 
-        album = db.session.execute(db.select(Albums).filter_by(id=photo.album_id)).scalar_one()
+        try:
+            album = db.session.execute(db.select(Albums).filter_by(id=album_id)).scalar_one()
+            album_title = album.title
+        except sqlalchemy.exc.NoResultFound as e:
+            flash(f"Could not find album title? This is a weird bug, alert the devs. (For photo \"{photo_title}\")", "warning")
+            album_title = 'Unknown?'
 
-        size_variant = db.session.execute(db.select(SizeVariants).filter_by(photo_id=photo.id, type=1)).scalar()
+        size_variant = db.session.execute(db.select(SizeVariants).filter_by(photo_id=photo_id, type=1)).scalar()
         if size_variant is None:
-            size_variant = db.session.execute(db.select(SizeVariants).filter_by(photo_id=photo.id, type=0)).scalar_one()
+            size_variant = db.session.execute(db.select(SizeVariants).filter_by(photo_id=photo_id, type=0)).scalar_one()
         photo_raw_link = f'{lychee_base_url}/uploads/{size_variant.short_path}'
 
         random_photos.append({"gallery_link": photo_gallery_link, 
                               "raw_link": photo_raw_link,
-                              "album_title": album.title,
+                              "title": photo_title,
+                              "album_title": album_title,
                               "album_link": album_link,
                               "address": photo.location,
                               "camera_body": photo.model,

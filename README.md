@@ -1,14 +1,14 @@
 # Rambutan
 
-v0.0.1
+v0.0.2
 
 Rambutan is a webapp that hooks into the database of a [Lychee](https://github.com/LycheeOrg/Lychee/) server and shows random pictures from it.
 
 ## Current Status
 
-* Recently dockerized!
-* Tested with SQLite, run locally and in docker container.
-* Up next: Testing with MySQL
+* Dockerized - appears [here](https://github.com/adelairdragon/rambutan/pkgs/container/rambutan)
+* Tested with SQLite and MySQL, run locally and in docker container.
+* v0.0.2 - Temporary fix for Lychee instances newer than v6.6.6 caused by DB migration
 
 ## How to Run
 
